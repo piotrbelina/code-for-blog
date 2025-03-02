@@ -18,17 +18,18 @@ import (
 
 // Todo defines model for Todo.
 type Todo struct {
-	Id    openapi_types.UUID `json:"id"`
-	Title string             `json:"title"`
+	Id    *openapi_types.UUID `json:"id,omitempty"`
+	Title string              `json:"title"`
 }
 
-// PostTodosJSONBody defines parameters for PostTodos.
-type PostTodosJSONBody struct {
-	Title string `json:"title"`
-}
+// IdParam defines model for idParam.
+type IdParam = openapi_types.UUID
 
 // PostTodosJSONRequestBody defines body for PostTodos for application/json ContentType.
-type PostTodosJSONRequestBody PostTodosJSONBody
+type PostTodosJSONRequestBody = Todo
+
+// PutTodosIdJSONRequestBody defines body for PutTodosId for application/json ContentType.
+type PutTodosIdJSONRequestBody = Todo
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -39,8 +40,14 @@ type ServerInterface interface {
 	// (POST /todos)
 	PostTodos(w http.ResponseWriter, r *http.Request)
 
+	// (DELETE /todos/{id})
+	DeleteTodosId(w http.ResponseWriter, r *http.Request, id IdParam)
+
 	// (GET /todos/{id})
-	GetTodosId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	GetTodosId(w http.ResponseWriter, r *http.Request, id IdParam)
+
+	// (PUT /todos/{id})
+	PutTodosId(w http.ResponseWriter, r *http.Request, id IdParam)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -80,13 +87,38 @@ func (siw *ServerInterfaceWrapper) PostTodos(w http.ResponseWriter, r *http.Requ
 	handler.ServeHTTP(w, r)
 }
 
+// DeleteTodosId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteTodosId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id IdParam
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteTodosId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetTodosId operation middleware
 func (siw *ServerInterfaceWrapper) GetTodosId(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
+	var id IdParam
 
 	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -96,6 +128,31 @@ func (siw *ServerInterfaceWrapper) GetTodosId(w http.ResponseWriter, r *http.Req
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetTodosId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PutTodosId operation middleware
+func (siw *ServerInterfaceWrapper) PutTodosId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id IdParam
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PutTodosId(w, r, id)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -227,9 +284,17 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 
 	m.HandleFunc("GET "+options.BaseURL+"/todos", wrapper.GetTodos)
 	m.HandleFunc("POST "+options.BaseURL+"/todos", wrapper.PostTodos)
+	m.HandleFunc("DELETE "+options.BaseURL+"/todos/{id}", wrapper.DeleteTodosId)
 	m.HandleFunc("GET "+options.BaseURL+"/todos/{id}", wrapper.GetTodosId)
+	m.HandleFunc("PUT "+options.BaseURL+"/todos/{id}", wrapper.PutTodosId)
 
 	return m
+}
+
+type N400Response struct {
+}
+
+type N404Response struct {
 }
 
 type GetTodosRequestObject struct {
@@ -256,24 +321,47 @@ type PostTodosResponseObject interface {
 	VisitPostTodosResponse(w http.ResponseWriter) error
 }
 
-type PostTodos201Response struct {
-}
+type PostTodos201JSONResponse Todo
 
-func (response PostTodos201Response) VisitPostTodosResponse(w http.ResponseWriter) error {
+func (response PostTodos201JSONResponse) VisitPostTodosResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(201)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-type PostTodos400Response struct {
-}
+type PostTodos400Response = N400Response
 
 func (response PostTodos400Response) VisitPostTodosResponse(w http.ResponseWriter) error {
 	w.WriteHeader(400)
 	return nil
 }
 
+type DeleteTodosIdRequestObject struct {
+	Id IdParam `json:"id"`
+}
+
+type DeleteTodosIdResponseObject interface {
+	VisitDeleteTodosIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteTodosId200Response struct {
+}
+
+func (response DeleteTodosId200Response) VisitDeleteTodosIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type DeleteTodosId404Response = N404Response
+
+func (response DeleteTodosId404Response) VisitDeleteTodosIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
 type GetTodosIdRequestObject struct {
-	Id openapi_types.UUID `json:"id"`
+	Id IdParam `json:"id"`
 }
 
 type GetTodosIdResponseObject interface {
@@ -289,10 +377,40 @@ func (response GetTodosId200JSONResponse) VisitGetTodosIdResponse(w http.Respons
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetTodosId404Response struct {
-}
+type GetTodosId404Response = N404Response
 
 func (response GetTodosId404Response) VisitGetTodosIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
+type PutTodosIdRequestObject struct {
+	Id   IdParam `json:"id"`
+	Body *PutTodosIdJSONRequestBody
+}
+
+type PutTodosIdResponseObject interface {
+	VisitPutTodosIdResponse(w http.ResponseWriter) error
+}
+
+type PutTodosId200Response struct {
+}
+
+func (response PutTodosId200Response) VisitPutTodosIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type PutTodosId400Response = N400Response
+
+func (response PutTodosId400Response) VisitPutTodosIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PutTodosId404Response = N404Response
+
+func (response PutTodosId404Response) VisitPutTodosIdResponse(w http.ResponseWriter) error {
 	w.WriteHeader(404)
 	return nil
 }
@@ -306,8 +424,14 @@ type StrictServerInterface interface {
 	// (POST /todos)
 	PostTodos(ctx context.Context, request PostTodosRequestObject) (PostTodosResponseObject, error)
 
+	// (DELETE /todos/{id})
+	DeleteTodosId(ctx context.Context, request DeleteTodosIdRequestObject) (DeleteTodosIdResponseObject, error)
+
 	// (GET /todos/{id})
 	GetTodosId(ctx context.Context, request GetTodosIdRequestObject) (GetTodosIdResponseObject, error)
+
+	// (PUT /todos/{id})
+	PutTodosId(ctx context.Context, request PutTodosIdRequestObject) (PutTodosIdResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
@@ -394,8 +518,34 @@ func (sh *strictHandler) PostTodos(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// DeleteTodosId operation middleware
+func (sh *strictHandler) DeleteTodosId(w http.ResponseWriter, r *http.Request, id IdParam) {
+	var request DeleteTodosIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteTodosId(ctx, request.(DeleteTodosIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteTodosId")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(DeleteTodosIdResponseObject); ok {
+		if err := validResponse.VisitDeleteTodosIdResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // GetTodosId operation middleware
-func (sh *strictHandler) GetTodosId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+func (sh *strictHandler) GetTodosId(w http.ResponseWriter, r *http.Request, id IdParam) {
 	var request GetTodosIdRequestObject
 
 	request.Id = id
@@ -413,6 +563,39 @@ func (sh *strictHandler) GetTodosId(w http.ResponseWriter, r *http.Request, id o
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetTodosIdResponseObject); ok {
 		if err := validResponse.VisitGetTodosIdResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutTodosId operation middleware
+func (sh *strictHandler) PutTodosId(w http.ResponseWriter, r *http.Request, id IdParam) {
+	var request PutTodosIdRequestObject
+
+	request.Id = id
+
+	var body PutTodosIdJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PutTodosId(ctx, request.(PutTodosIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutTodosId")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PutTodosIdResponseObject); ok {
+		if err := validResponse.VisitPutTodosIdResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

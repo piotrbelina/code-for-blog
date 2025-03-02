@@ -21,32 +21,25 @@ paths:
     post:
       description: "Create a todo"
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                title:
-                  type: string
-              required:
-                - title
+              $ref: "#/components/schemas/Todo"
       responses:
         201:
           description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
         400:
-          description: Invalid input
+          $ref: "#/components/responses/400"
 
   /todos/{id}:
     get:
       description: "Get todo"
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: "#/components/parameters/idParam"
       responses:
         200:
           description: "Get a todo"
@@ -55,10 +48,47 @@ paths:
               schema:
                 $ref: "#/components/schemas/Todo"
         404:
-          description: A todo with the specified ID was not found.
-
+          $ref: "#/components/responses/404"
+    put:
+      description: "Updates todo"
+      parameters:
+        - $ref: "#/components/parameters/idParam"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Todo"
+      responses:
+        200:
+          description: "Todo updated"
+        400:
+          $ref: "#/components/responses/400"
+        404:
+          $ref: "#/components/responses/404"
+    delete:
+      description: "Delete todo"
+      parameters:
+        - $ref: "#/components/parameters/idParam"
+      responses:
+        200:
+          description: "Todo removed"
+        404:
+          $ref: "#/components/responses/404"
 
 components:
+  requestBodies:
+    TodoBody:
+      description: Todo object to be added or updated
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+            required:
+              - title
   schemas:
      Todo:
        type: object
@@ -69,5 +99,17 @@ components:
          title:
            type: string
        required:
-         - id
          - title
+  parameters:
+    idParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    404:
+      description: A todo with the specified ID was not found.
+    400:
+      description: Invalid input

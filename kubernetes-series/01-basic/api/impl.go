@@ -46,13 +46,13 @@ func (t *TodoStore) PostTodos(ctx context.Context, r PostTodosRequestObject) (Po
 
 	id := uuid.New()
 	todo := Todo{
-		Id:    id,
+		Id:    &id,
 		Title: title,
 	}
 
 	t.todos[id] = todo
 
-	return PostTodos201Response{}, nil
+	return PostTodos201JSONResponse(todo), nil
 }
 
 func (t *TodoStore) GetTodosId(ctx context.Context, r GetTodosIdRequestObject) (GetTodosIdResponseObject, error) {
@@ -64,4 +64,32 @@ func (t *TodoStore) GetTodosId(ctx context.Context, r GetTodosIdRequestObject) (
 		return GetTodosId404Response{}, nil
 	}
 	return GetTodosId200JSONResponse(todo), nil
+}
+
+func (t *TodoStore) DeleteTodosId(ctx context.Context, r DeleteTodosIdRequestObject) (DeleteTodosIdResponseObject, error) {
+	_, ok := t.todos[r.Id]
+	if !ok {
+		return DeleteTodosId404Response{}, nil
+	}
+	delete(t.todos, r.Id)
+
+	return DeleteTodosId200Response{}, nil
+}
+
+func (t *TodoStore) PutTodosId(ctx context.Context, r PutTodosIdRequestObject) (PutTodosIdResponseObject, error) {
+	todo, ok := t.todos[r.Id]
+	if !ok {
+		return PutTodosId404Response{}, nil
+	}
+
+	title := r.Body.Title
+	if title == "" {
+		return PutTodosId400Response{}, nil
+	}
+
+	todo.Title = title
+
+	t.todos[r.Id] = todo
+
+	return PutTodosId200Response{}, nil
 }
