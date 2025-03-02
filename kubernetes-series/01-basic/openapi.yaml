@@ -1,0 +1,73 @@
+openapi: 3.0.3
+info:
+  title: TODO API
+  description: TODO API
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8000'
+paths:
+  /todos:
+    get:
+      description: "Get all todos"
+      responses:
+        200:
+          description: "List of todos"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Todo"
+    post:
+      description: "Create a todo"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+              required:
+                - title
+      responses:
+        201:
+          description: Created
+        400:
+          description: Invalid input
+
+  /todos/{id}:
+    get:
+      description: "Get todo"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: "Get a todo"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+        404:
+          description: A todo with the specified ID was not found.
+
+
+components:
+  schemas:
+     Todo:
+       type: object
+       properties:
+         id:
+           type: string
+           format: uuid
+         title:
+           type: string
+       required:
+         - id
+         - title
