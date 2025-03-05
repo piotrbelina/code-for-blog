@@ -1,10 +1,13 @@
-module github.com/piotrbelina/code-for-blog/kubernetes-series/01-basic
+module github.com/piotrbelina/code-for-blog/kubernetes-series/02-create-container
 
 go 1.24.0
 
 tool github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen
 
-require github.com/oapi-codegen/runtime v1.1.1
+require (
+	github.com/google/uuid v1.5.0
+	github.com/oapi-codegen/runtime v1.1.1
+)
 
 require (
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
@@ -12,7 +15,6 @@ require (
 	github.com/getkin/kin-openapi v0.127.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
-	github.com/google/uuid v1.5.0 // indirect
 	github.com/invopop/yaml v0.3.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect

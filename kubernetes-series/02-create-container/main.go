@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/piotrbelina/code-for-blog/kubernetes-series/01-basic/api"
+	"github.com/piotrbelina/code-for-blog/kubernetes-series/02-create-container/api"
 )
 
 func main() {
