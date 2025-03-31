@@ -25,11 +25,11 @@ type Todo struct {
 // IdParam defines model for idParam.
 type IdParam = openapi_types.UUID
 
-// PostTodosJSONRequestBody defines body for PostTodos for application/json ContentType.
-type PostTodosJSONRequestBody = Todo
+// PostTodoJSONRequestBody defines body for PostTodo for application/json ContentType.
+type PostTodoJSONRequestBody = Todo
 
-// PutTodosIdJSONRequestBody defines body for PutTodosId for application/json ContentType.
-type PutTodosIdJSONRequestBody = Todo
+// PutTodoJSONRequestBody defines body for PutTodo for application/json ContentType.
+type PutTodoJSONRequestBody = Todo
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -38,16 +38,16 @@ type ServerInterface interface {
 	GetTodos(w http.ResponseWriter, r *http.Request)
 
 	// (POST /todos)
-	PostTodos(w http.ResponseWriter, r *http.Request)
+	PostTodo(w http.ResponseWriter, r *http.Request)
 
 	// (DELETE /todos/{id})
-	DeleteTodosId(w http.ResponseWriter, r *http.Request, id IdParam)
+	DeleteTodo(w http.ResponseWriter, r *http.Request, id IdParam)
 
 	// (GET /todos/{id})
-	GetTodosId(w http.ResponseWriter, r *http.Request, id IdParam)
+	GetTodo(w http.ResponseWriter, r *http.Request, id IdParam)
 
 	// (PUT /todos/{id})
-	PutTodosId(w http.ResponseWriter, r *http.Request, id IdParam)
+	PutTodo(w http.ResponseWriter, r *http.Request, id IdParam)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -73,11 +73,11 @@ func (siw *ServerInterfaceWrapper) GetTodos(w http.ResponseWriter, r *http.Reque
 	handler.ServeHTTP(w, r)
 }
 
-// PostTodos operation middleware
-func (siw *ServerInterfaceWrapper) PostTodos(w http.ResponseWriter, r *http.Request) {
+// PostTodo operation middleware
+func (siw *ServerInterfaceWrapper) PostTodo(w http.ResponseWriter, r *http.Request) {
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostTodos(w, r)
+		siw.Handler.PostTodo(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -87,8 +87,8 @@ func (siw *ServerInterfaceWrapper) PostTodos(w http.ResponseWriter, r *http.Requ
 	handler.ServeHTTP(w, r)
 }
 
-// DeleteTodosId operation middleware
-func (siw *ServerInterfaceWrapper) DeleteTodosId(w http.ResponseWriter, r *http.Request) {
+// DeleteTodo operation middleware
+func (siw *ServerInterfaceWrapper) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -102,7 +102,7 @@ func (siw *ServerInterfaceWrapper) DeleteTodosId(w http.ResponseWriter, r *http.
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteTodosId(w, r, id)
+		siw.Handler.DeleteTodo(w, r, id)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -112,8 +112,8 @@ func (siw *ServerInterfaceWrapper) DeleteTodosId(w http.ResponseWriter, r *http.
 	handler.ServeHTTP(w, r)
 }
 
-// GetTodosId operation middleware
-func (siw *ServerInterfaceWrapper) GetTodosId(w http.ResponseWriter, r *http.Request) {
+// GetTodo operation middleware
+func (siw *ServerInterfaceWrapper) GetTodo(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -127,7 +127,7 @@ func (siw *ServerInterfaceWrapper) GetTodosId(w http.ResponseWriter, r *http.Req
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetTodosId(w, r, id)
+		siw.Handler.GetTodo(w, r, id)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -137,8 +137,8 @@ func (siw *ServerInterfaceWrapper) GetTodosId(w http.ResponseWriter, r *http.Req
 	handler.ServeHTTP(w, r)
 }
 
-// PutTodosId operation middleware
-func (siw *ServerInterfaceWrapper) PutTodosId(w http.ResponseWriter, r *http.Request) {
+// PutTodo operation middleware
+func (siw *ServerInterfaceWrapper) PutTodo(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -152,7 +152,7 @@ func (siw *ServerInterfaceWrapper) PutTodosId(w http.ResponseWriter, r *http.Req
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PutTodosId(w, r, id)
+		siw.Handler.PutTodo(w, r, id)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -283,10 +283,10 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	}
 
 	m.HandleFunc("GET "+options.BaseURL+"/todos", wrapper.GetTodos)
-	m.HandleFunc("POST "+options.BaseURL+"/todos", wrapper.PostTodos)
-	m.HandleFunc("DELETE "+options.BaseURL+"/todos/{id}", wrapper.DeleteTodosId)
-	m.HandleFunc("GET "+options.BaseURL+"/todos/{id}", wrapper.GetTodosId)
-	m.HandleFunc("PUT "+options.BaseURL+"/todos/{id}", wrapper.PutTodosId)
+	m.HandleFunc("POST "+options.BaseURL+"/todos", wrapper.PostTodo)
+	m.HandleFunc("DELETE "+options.BaseURL+"/todos/{id}", wrapper.DeleteTodo)
+	m.HandleFunc("GET "+options.BaseURL+"/todos/{id}", wrapper.GetTodo)
+	m.HandleFunc("PUT "+options.BaseURL+"/todos/{id}", wrapper.PutTodo)
 
 	return m
 }
@@ -313,104 +313,104 @@ func (response GetTodos200JSONResponse) VisitGetTodosResponse(w http.ResponseWri
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostTodosRequestObject struct {
-	Body *PostTodosJSONRequestBody
+type PostTodoRequestObject struct {
+	Body *PostTodoJSONRequestBody
 }
 
-type PostTodosResponseObject interface {
-	VisitPostTodosResponse(w http.ResponseWriter) error
+type PostTodoResponseObject interface {
+	VisitPostTodoResponse(w http.ResponseWriter) error
 }
 
-type PostTodos201JSONResponse Todo
+type PostTodo201JSONResponse Todo
 
-func (response PostTodos201JSONResponse) VisitPostTodosResponse(w http.ResponseWriter) error {
+func (response PostTodo201JSONResponse) VisitPostTodoResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(201)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostTodos400Response = N400Response
+type PostTodo400Response = N400Response
 
-func (response PostTodos400Response) VisitPostTodosResponse(w http.ResponseWriter) error {
+func (response PostTodo400Response) VisitPostTodoResponse(w http.ResponseWriter) error {
 	w.WriteHeader(400)
 	return nil
 }
 
-type DeleteTodosIdRequestObject struct {
+type DeleteTodoRequestObject struct {
 	Id IdParam `json:"id"`
 }
 
-type DeleteTodosIdResponseObject interface {
-	VisitDeleteTodosIdResponse(w http.ResponseWriter) error
+type DeleteTodoResponseObject interface {
+	VisitDeleteTodoResponse(w http.ResponseWriter) error
 }
 
-type DeleteTodosId200Response struct {
+type DeleteTodo200Response struct {
 }
 
-func (response DeleteTodosId200Response) VisitDeleteTodosIdResponse(w http.ResponseWriter) error {
+func (response DeleteTodo200Response) VisitDeleteTodoResponse(w http.ResponseWriter) error {
 	w.WriteHeader(200)
 	return nil
 }
 
-type DeleteTodosId404Response = N404Response
+type DeleteTodo404Response = N404Response
 
-func (response DeleteTodosId404Response) VisitDeleteTodosIdResponse(w http.ResponseWriter) error {
+func (response DeleteTodo404Response) VisitDeleteTodoResponse(w http.ResponseWriter) error {
 	w.WriteHeader(404)
 	return nil
 }
 
-type GetTodosIdRequestObject struct {
+type GetTodoRequestObject struct {
 	Id IdParam `json:"id"`
 }
 
-type GetTodosIdResponseObject interface {
-	VisitGetTodosIdResponse(w http.ResponseWriter) error
+type GetTodoResponseObject interface {
+	VisitGetTodoResponse(w http.ResponseWriter) error
 }
 
-type GetTodosId200JSONResponse Todo
+type GetTodo200JSONResponse Todo
 
-func (response GetTodosId200JSONResponse) VisitGetTodosIdResponse(w http.ResponseWriter) error {
+func (response GetTodo200JSONResponse) VisitGetTodoResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetTodosId404Response = N404Response
+type GetTodo404Response = N404Response
 
-func (response GetTodosId404Response) VisitGetTodosIdResponse(w http.ResponseWriter) error {
+func (response GetTodo404Response) VisitGetTodoResponse(w http.ResponseWriter) error {
 	w.WriteHeader(404)
 	return nil
 }
 
-type PutTodosIdRequestObject struct {
+type PutTodoRequestObject struct {
 	Id   IdParam `json:"id"`
-	Body *PutTodosIdJSONRequestBody
+	Body *PutTodoJSONRequestBody
 }
 
-type PutTodosIdResponseObject interface {
-	VisitPutTodosIdResponse(w http.ResponseWriter) error
+type PutTodoResponseObject interface {
+	VisitPutTodoResponse(w http.ResponseWriter) error
 }
 
-type PutTodosId200Response struct {
+type PutTodo200Response struct {
 }
 
-func (response PutTodosId200Response) VisitPutTodosIdResponse(w http.ResponseWriter) error {
+func (response PutTodo200Response) VisitPutTodoResponse(w http.ResponseWriter) error {
 	w.WriteHeader(200)
 	return nil
 }
 
-type PutTodosId400Response = N400Response
+type PutTodo400Response = N400Response
 
-func (response PutTodosId400Response) VisitPutTodosIdResponse(w http.ResponseWriter) error {
+func (response PutTodo400Response) VisitPutTodoResponse(w http.ResponseWriter) error {
 	w.WriteHeader(400)
 	return nil
 }
 
-type PutTodosId404Response = N404Response
+type PutTodo404Response = N404Response
 
-func (response PutTodosId404Response) VisitPutTodosIdResponse(w http.ResponseWriter) error {
+func (response PutTodo404Response) VisitPutTodoResponse(w http.ResponseWriter) error {
 	w.WriteHeader(404)
 	return nil
 }
@@ -422,16 +422,16 @@ type StrictServerInterface interface {
 	GetTodos(ctx context.Context, request GetTodosRequestObject) (GetTodosResponseObject, error)
 
 	// (POST /todos)
-	PostTodos(ctx context.Context, request PostTodosRequestObject) (PostTodosResponseObject, error)
+	PostTodo(ctx context.Context, request PostTodoRequestObject) (PostTodoResponseObject, error)
 
 	// (DELETE /todos/{id})
-	DeleteTodosId(ctx context.Context, request DeleteTodosIdRequestObject) (DeleteTodosIdResponseObject, error)
+	DeleteTodo(ctx context.Context, request DeleteTodoRequestObject) (DeleteTodoResponseObject, error)
 
 	// (GET /todos/{id})
-	GetTodosId(ctx context.Context, request GetTodosIdRequestObject) (GetTodosIdResponseObject, error)
+	GetTodo(ctx context.Context, request GetTodoRequestObject) (GetTodoResponseObject, error)
 
 	// (PUT /todos/{id})
-	PutTodosId(ctx context.Context, request PutTodosIdRequestObject) (PutTodosIdResponseObject, error)
+	PutTodo(ctx context.Context, request PutTodoRequestObject) (PutTodoResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
@@ -487,11 +487,11 @@ func (sh *strictHandler) GetTodos(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// PostTodos operation middleware
-func (sh *strictHandler) PostTodos(w http.ResponseWriter, r *http.Request) {
-	var request PostTodosRequestObject
+// PostTodo operation middleware
+func (sh *strictHandler) PostTodo(w http.ResponseWriter, r *http.Request) {
+	var request PostTodoRequestObject
 
-	var body PostTodosJSONRequestBody
+	var body PostTodoJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
 		return
@@ -499,18 +499,18 @@ func (sh *strictHandler) PostTodos(w http.ResponseWriter, r *http.Request) {
 	request.Body = &body
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.PostTodos(ctx, request.(PostTodosRequestObject))
+		return sh.ssi.PostTodo(ctx, request.(PostTodoRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostTodos")
+		handler = middleware(handler, "PostTodo")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(PostTodosResponseObject); ok {
-		if err := validResponse.VisitPostTodosResponse(w); err != nil {
+	} else if validResponse, ok := response.(PostTodoResponseObject); ok {
+		if err := validResponse.VisitPostTodoResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -518,25 +518,25 @@ func (sh *strictHandler) PostTodos(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// DeleteTodosId operation middleware
-func (sh *strictHandler) DeleteTodosId(w http.ResponseWriter, r *http.Request, id IdParam) {
-	var request DeleteTodosIdRequestObject
+// DeleteTodo operation middleware
+func (sh *strictHandler) DeleteTodo(w http.ResponseWriter, r *http.Request, id IdParam) {
+	var request DeleteTodoRequestObject
 
 	request.Id = id
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.DeleteTodosId(ctx, request.(DeleteTodosIdRequestObject))
+		return sh.ssi.DeleteTodo(ctx, request.(DeleteTodoRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "DeleteTodosId")
+		handler = middleware(handler, "DeleteTodo")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(DeleteTodosIdResponseObject); ok {
-		if err := validResponse.VisitDeleteTodosIdResponse(w); err != nil {
+	} else if validResponse, ok := response.(DeleteTodoResponseObject); ok {
+		if err := validResponse.VisitDeleteTodoResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -544,25 +544,25 @@ func (sh *strictHandler) DeleteTodosId(w http.ResponseWriter, r *http.Request, i
 	}
 }
 
-// GetTodosId operation middleware
-func (sh *strictHandler) GetTodosId(w http.ResponseWriter, r *http.Request, id IdParam) {
-	var request GetTodosIdRequestObject
+// GetTodo operation middleware
+func (sh *strictHandler) GetTodo(w http.ResponseWriter, r *http.Request, id IdParam) {
+	var request GetTodoRequestObject
 
 	request.Id = id
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.GetTodosId(ctx, request.(GetTodosIdRequestObject))
+		return sh.ssi.GetTodo(ctx, request.(GetTodoRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetTodosId")
+		handler = middleware(handler, "GetTodo")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(GetTodosIdResponseObject); ok {
-		if err := validResponse.VisitGetTodosIdResponse(w); err != nil {
+	} else if validResponse, ok := response.(GetTodoResponseObject); ok {
+		if err := validResponse.VisitGetTodoResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -570,13 +570,13 @@ func (sh *strictHandler) GetTodosId(w http.ResponseWriter, r *http.Request, id I
 	}
 }
 
-// PutTodosId operation middleware
-func (sh *strictHandler) PutTodosId(w http.ResponseWriter, r *http.Request, id IdParam) {
-	var request PutTodosIdRequestObject
+// PutTodo operation middleware
+func (sh *strictHandler) PutTodo(w http.ResponseWriter, r *http.Request, id IdParam) {
+	var request PutTodoRequestObject
 
 	request.Id = id
 
-	var body PutTodosIdJSONRequestBody
+	var body PutTodoJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
 		return
@@ -584,18 +584,18 @@ func (sh *strictHandler) PutTodosId(w http.ResponseWriter, r *http.Request, id I
 	request.Body = &body
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.PutTodosId(ctx, request.(PutTodosIdRequestObject))
+		return sh.ssi.PutTodo(ctx, request.(PutTodoRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PutTodosId")
+		handler = middleware(handler, "PutTodo")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(PutTodosIdResponseObject); ok {
-		if err := validResponse.VisitPutTodosIdResponse(w); err != nil {
+	} else if validResponse, ok := response.(PutTodoResponseObject); ok {
+		if err := validResponse.VisitPutTodoResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

@@ -34,14 +34,14 @@ func (t *TodoStore) GetTodos(ctx context.Context, r GetTodosRequestObject) (GetT
 	return GetTodos200JSONResponse(result), nil
 }
 
-func (t *TodoStore) PostTodos(ctx context.Context, r PostTodosRequestObject) (PostTodosResponseObject, error) {
+func (t *TodoStore) PostTodo(ctx context.Context, r PostTodoRequestObject) (PostTodoResponseObject, error) {
 	t.Lock.Lock()
 	defer t.Lock.Unlock()
 
 	title := r.Body.Title
 
 	if title == "" {
-		return PostTodos400Response{}, nil
+		return PostTodo400Response{}, nil
 	}
 
 	id := uuid.New()
@@ -52,44 +52,44 @@ func (t *TodoStore) PostTodos(ctx context.Context, r PostTodosRequestObject) (Po
 
 	t.todos[id] = todo
 
-	return PostTodos201JSONResponse(todo), nil
+	return PostTodo201JSONResponse(todo), nil
 }
 
-func (t *TodoStore) GetTodosId(ctx context.Context, r GetTodosIdRequestObject) (GetTodosIdResponseObject, error) {
+func (t *TodoStore) GetTodo(ctx context.Context, r GetTodoRequestObject) (GetTodoResponseObject, error) {
 	t.Lock.Lock()
 	defer t.Lock.Unlock()
 
 	todo, ok := t.todos[r.Id]
 	if !ok {
-		return GetTodosId404Response{}, nil
+		return GetTodo404Response{}, nil
 	}
-	return GetTodosId200JSONResponse(todo), nil
+	return GetTodo200JSONResponse(todo), nil
 }
 
-func (t *TodoStore) DeleteTodosId(ctx context.Context, r DeleteTodosIdRequestObject) (DeleteTodosIdResponseObject, error) {
+func (t *TodoStore) DeleteTodo(ctx context.Context, r DeleteTodoRequestObject) (DeleteTodoResponseObject, error) {
 	_, ok := t.todos[r.Id]
 	if !ok {
-		return DeleteTodosId404Response{}, nil
+		return DeleteTodo404Response{}, nil
 	}
 	delete(t.todos, r.Id)
 
-	return DeleteTodosId200Response{}, nil
+	return DeleteTodo200Response{}, nil
 }
 
-func (t *TodoStore) PutTodosId(ctx context.Context, r PutTodosIdRequestObject) (PutTodosIdResponseObject, error) {
+func (t *TodoStore) PutTodo(ctx context.Context, r PutTodoRequestObject) (PutTodoResponseObject, error) {
 	todo, ok := t.todos[r.Id]
 	if !ok {
-		return PutTodosId404Response{}, nil
+		return PutTodo404Response{}, nil
 	}
 
 	title := r.Body.Title
 	if title == "" {
-		return PutTodosId400Response{}, nil
+		return PutTodo400Response{}, nil
 	}
 
 	todo.Title = title
 
 	t.todos[r.Id] = todo
 
-	return PutTodosId200Response{}, nil
+	return PutTodo200Response{}, nil
 }

@@ -8,6 +8,7 @@ servers:
 paths:
   /todos:
     get:
+      operationId: getTodos
       description: "Get all todos"
       responses:
         200:
@@ -19,6 +20,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/Todo"
     post:
+      operationId: postTodo
       description: "Create a todo"
       requestBody:
         content:
@@ -37,6 +39,7 @@ paths:
 
   /todos/{id}:
     get:
+      operationId: getTodo
       description: "Get todo"
       parameters:
         - $ref: "#/components/parameters/idParam"
@@ -50,6 +53,7 @@ paths:
         404:
           $ref: "#/components/responses/404"
     put:
+      operationId: putTodo
       description: "Updates todo"
       parameters:
         - $ref: "#/components/parameters/idParam"
@@ -66,6 +70,7 @@ paths:
         404:
           $ref: "#/components/responses/404"
     delete:
+      operationId: deleteTodo
       description: "Delete todo"
       parameters:
         - $ref: "#/components/parameters/idParam"
